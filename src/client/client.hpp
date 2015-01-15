@@ -126,8 +126,13 @@ class Client
         int tipOffsetTime;      //Time from where to start requesting once reseting to tip
         uint32_t idChannel;
 		list<Temporizable*> temporizableList;
-		Disconnector* disconnector;
-		Connector* connector;
+
+		//ECM
+		Disconnector* disconnectorIn;
+		Disconnector* disconnectorOut;
+		Connector* connectorIn;
+		Connector* connectorOut;
+
 		PeerRequester* requester;
         Strategy* chunkSchedulerStrategy;
         //-----------------------         

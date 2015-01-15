@@ -215,7 +215,8 @@ void Bootstrap::HandlePingMessage(MessagePingBoot* message, string sourceAddress
         if (channelList[channelId].HasPeer(srcPeer))
         {
             channelList[channelId].GetPeerData(srcPeer).SetMode(peerMode);
-            channelList[channelId].GetPeerData(srcPeer).SetTTL(TTL);
+            //ECM alteracao no TTL para TTLIn que agora e usado no channel
+            channelList[channelId].GetPeerData(srcPeer).SetTTLIn(TTLIn);
 
             //If ping from server
             if (*(srcPeer) == *(channelList[channelId].GetServer())) 
