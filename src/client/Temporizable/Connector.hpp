@@ -13,7 +13,7 @@ class Connector : public Temporizable
 
     public:
 		Connector(Strategy *disconnectorStrategy, PeerManager* peerManager, uint64_t timerPeriod);
-		void Connect();
+		void Connect(set<string>* peerActive, boost::mutex* peerActiveMutex);
 		void TimerAlarm(uint64_t timerPeriod, string timerName);
 };
 

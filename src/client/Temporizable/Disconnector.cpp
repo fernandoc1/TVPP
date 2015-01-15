@@ -6,11 +6,11 @@ Disconnector::Disconnector(Strategy *disconnectorStrategy, PeerManager* peerMana
 	this->peerManager = peerManager;
 }
 
-void Disconnector::Disconnect()
+void Disconnector::Disconnect(set<string>* peerActive)
 {
 	vector<PeerData*> peers;
 	boost::mutex::scoped_lock peerListLock(*peerManager->GetPeerListMutex());
-	for (set<string>::iterator i = peerManager->GetPeerActive()->begin(); i != peerManager->GetPeerActive()->end(); i++)
+	for (set<string>::iterator i = peerActive->begin(); i != peerActive->end(); i++)
 	{
 		peers.push_back(peerManager->GetPeerData(*i));
 	}

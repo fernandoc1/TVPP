@@ -6,38 +6,51 @@ using namespace std;
  *Metodo construtor
  * Recebe o TTL padrão (Tempo de vida na lista de peers caso o o cliente pare de se comunicar com o servidor)
  * ID que o o endereço IP do peer
+ * ECM - Inclusao do ttlIn e ttlOut
  */
-PeerData::PeerData(Peer* peer, int ttl, int size) : chunkMap(size)
+PeerData::PeerData(Peer* peer, int ttlIn, int ttlOut, int size) : chunkMap(size)
 {
-	this->ttl = ttl;
+	//ECM
+	this->ttlIn = ttlIn;
+	this->ttlOut = ttlOut;
     this->peer = peer;
     uploadScore = 0;
     mode = MODE_CLIENT;
     pendingRequests = 0;
     delay = 0;
 }
-
-int PeerData::GetTTL()
+//ECM
+int PeerData::GetTTLIn()
 {
-    return ttl;
+    return ttlIn;
+}
+int PeerData::GetTTLOut()
+{
+    return ttlOut;
+}
+/** Altera o TTL*/
+void PeerData::SetTTLIn(int ttlIn)
+{
+	this->ttlIn = ttlIn;
+}
+void PeerData::SetTTLOut(int ttlOut)
+{
+	this->ttlOut = ttlOut;
 }
 
+/** Decrementa o TTL em 1*/
+void PeerData::DecTTLIn()
+{
+    ttlIn--;
+}
+void PeerData::DecTTLOut()
+{
+    ttlOut--;
+}
 /** Retorna o ID*/
 Peer* PeerData::GetPeer()
 {
     return peer;
-}
-
-/** Altera o TTL*/
-void PeerData::SetTTL(int ttl)
-{
-	this->ttl = ttl;
-}
-
-/** Decrementa o TTL em 1*/
-void PeerData::DecTTL()
-{
-    ttl--;
 }
 
 /** Altera o Modo do Peer */

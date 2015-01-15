@@ -34,7 +34,7 @@ sclient: $(C_OBJECTS)
 
 clean:
 	find . -name "*.o" | xargs rm
-	rm $(BIN_DIR)/client $(BIN_DIR)/bootstrap $(BIN_DIR)/sclient $(BIN_DIR)/sbootstrap
+	rm -f $(BIN_DIR)/client $(BIN_DIR)/bootstrap $(BIN_DIR)/sclient $(BIN_DIR)/sbootstrap
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@

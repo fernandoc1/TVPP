@@ -13,7 +13,7 @@ class Disconnector : public Temporizable
 
     public:
 		Disconnector(Strategy *disconnectorStrategy, PeerManager* peerManager, uint64_t timerPeriod);
-		void Disconnect();
+		void Disconnect(set<string>* peerActive);
 		void TimerAlarm(uint64_t timerPeriod, string timerName);
 };
 

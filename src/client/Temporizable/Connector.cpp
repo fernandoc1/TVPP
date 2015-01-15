@@ -5,19 +5,19 @@ Connector::Connector(Strategy *connectorStrategy, PeerManager* peerManager, uint
 	this->strategy = connectorStrategy;
 	this->peerManager = peerManager;
 }
-
-void Connector::Connect()
+//ECM - mudou para definir, agora em qual lista de pares a conexao sera realizada
+void Connector::Connect(set<string>* peerActive, boost::mutex* peerActiveMutex)
 {
 	vector<PeerData*> peers;
 	boost::mutex::scoped_lock peerListLock(*peerManager->GetPeerListMutex());
 	for (map<string, PeerData>::iterator i = peerManager->GetPeerList()->begin(); i != peerManager->GetPeerList()->end(); i++)
 	{
-		if (!peerManager->IsPeerActive(i->first))
+		if (!peerManager->IsPeerActive(i->first), peerActive, peerActiveMutex)
 			peers.push_back(&i->second);
 	}
 	strategy->Execute(&peers, NULL, peerManager->GetMaxActivePeers());
 
-	unsigned int vacancies = peerManager->GetMaxActivePeers() - peerManager->GetPeerActiveSize();
+	unsigned int vacancies = peerManager->GetMaxActivePeers() - peerManager->GetPeerActiveSize(peerActive, peerActiveMutex);
 	if (vacancies > peers.size()) vacancies = peers.size();
 
 	if (!peers.empty())

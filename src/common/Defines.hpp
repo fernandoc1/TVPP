@@ -5,7 +5,9 @@
 
 #define MTU 1500
 #define STD_BUFFERSIZE 1600
-#define TTL 10
+//ECM
+#define TTLIn 10
+#define TTLOut 10
 
 #define SECONDS 1000000000
 
