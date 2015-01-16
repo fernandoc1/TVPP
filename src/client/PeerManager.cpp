@@ -175,6 +175,7 @@ void PeerManager::CheckpeerActiveCooldown(map<string, unsigned int>* peerActiveC
 void PeerManager::CheckPeerList()
 {
 	//ECM
+	//Tabela de decisao para remover um peer da lista de vizinhos.
 	//|--------------------------------------------------------------------------------------------------|
 	//| ttlIn ttlOut PeerActiveIn    PeerActiveOut |  Desconectar In | Desconectar Out | Remover  | caso |
 	//|--------------------------------------------------------------------------------------------------|
@@ -185,16 +186,56 @@ void PeerManager::CheckPeerList()
 	//|  <>0    0    nao pertence      pertence    |                 |        X        |     X    |   5  |
     //|--------------------------------------------------------------------------------------------------|
 
-    set<string> deletaPeer;        //pares a serem removidos de peersList
     set<string> desconectaPeerIn;  //pares In a serem desconectados
     set<string> desconectaPeerOut; //pares Out a serem desconectados
+    set<string> deletaPeer;        //pares a serem removidos de peersList
 
-    int ttlOut_temp = 0;
-    bool peerPertenceOut = false;
-    bool peerPertenceIn  = false;
+    bool isPeerActiveIn = false;
+    bool isPeerActiveOut  = false;
+
     boost::mutex::scoped_lock peerActiveInLock(peerActiveMutexIn);
     boost::mutex::scoped_lock peerActiveOUTLock(peerActiveMutexOut);
 
+    //gera lista com todos os pares ativos
+    set<string> temp_allActivePeer (peerActiveIn);
+    for (set<string>::iterator i = peerActiveOut.begin(); i != peerActiveOut.end(); i++)
+    	temp_allActivePeer.insert(*i);
+
+    for (set<string>::iterator i = temp_allActivePeer.begin(); i != temp_allActivePeer.end(); i++)
+    {
+    	isPeerActiveIn = peerActiveIn.find(*i) != peerActiveIn.end();
+    	if (isPeerActiveIn) //trata a lista In
+    	{
+    		peerList[*i].DecTTLIn();
+    		if (peerList[*i].GetTTLIn() <= 0)
+    		{
+    			desconectaPeerIn.insert(*i);
+    			isPeerActiveIn = false;
+    		}
+    	}
+    	isPeerActiveOut = peerActiveOut.find(*i) != peerActiveOut.end();
+    	if (isPeerActiveOut) //trata a lista Out
+    	{
+    		peerList[*i].DecTTLOut();
+    		if (peerList[*i].GetTTLOut() <= 0)
+    	    {
+    			desconectaPeerOut.insert(*i);
+    			isPeerActiveOut = false;
+    		}
+
+    	}
+    	if ((!isPeerActiveIn) && (!isPeerActiveOut)) //remove o peer da lista de vizinhos
+     		deletaPeer.insert(*i);
+    }
+    peerActiveInLock.unlock();
+	peerActiveOUTLock.unlock();
+
+    /*/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    int ttlOut_temp = 0;
+    bool peerPertenceIn = false;
+    bool peerPertenceOut  = false;
+    boost::mutex::scoped_lock peerActiveInLock(peerActiveMutexIn);
+    boost::mutex::scoped_lock peerActiveOUTLock(peerActiveMutexOut);
     // trata casos: 1, 2, 3, 4
     for (set<string>::iterator i = peerActiveIn.begin(); i != peerActiveIn.end(); i++)
     {
@@ -235,9 +276,10 @@ void PeerManager::CheckPeerList()
         }
     }
 
+
     peerActiveInLock.unlock();
 	peerActiveOUTLock.unlock();
-
+    */////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     for (set<string>::iterator i = desconectaPeerIn.begin(); i != desconectaPeerIn.end(); i++)
     {
