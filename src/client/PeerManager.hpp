@@ -48,8 +48,14 @@ class PeerManager
 	void DisconnectPeer(string peer, set<string>* peerActive, boost::mutex* peerActiveMutex);
 		void RemovePeer(string peer);//remove na lista de vizinhos
 
-	unsigned int GetPeerActiveSizeTotal(); //usada para fornecer o total de pares ativos em In + Out sem repetição
+	/*ECM - nao deve implementar as funções:
+	 * unsigned int GetPeerActiveSizeIn()
+	 * unsigned int GetPeerActiveSizeOut()
+	 * porque, assim o método Connector::connector() deverá ser dois, ao contrário de único.
+	 */
 	unsigned int GetPeerActiveSize(set<string>* peerActive, boost::mutex* peerActiveMutex);
+	unsigned int GetPeerActiveSizeTotal(); //usada para fornecer o total de pares ativos em In + Out sem repetição. Será removida!!!
+
 	bool IsPeerActive(string peer,set<string>* peerActive, boost::mutex* peerActiveMutex);
 		PeerData* GetPeerData(string peer); // a lista de vizinhos é a única que tem os dados do peer
 

@@ -103,15 +103,20 @@ unsigned int PeerManager::GetPeerActiveSize(set<string>* peerActive, boost::mute
 }
 
 //gera total de parceiros somando In e Out sem repeticoes
+//esta função perderá sua utilização quando o cliente informar separado ao bootstrap quantos peers in e Out
 unsigned int PeerManager::GetPeerActiveSizeTotal()
 {
-	unsigned int size = this->GetPeerActiveSize(&peerActiveIn,&peerActiveMutexIn);
-	boost::mutex::scoped_lock peerActiveLock(peerActiveMutexOut);
-	for (set<string>::iterator i = peerActiveIn.begin(); i != peerActiveIn.end(); i++)
+	unsigned int size = this->GetPeerActiveSize(&peerActiveIn, &peerActiveMutexIn);
+	boost::mutex::scoped_lock peerActiveInLock(peerActiveMutexIn);
+	boost::mutex::scoped_lock peerActiveOutLock(peerActiveMutexOut);
+	//Soma não repetidos em Out
+	for (set<string>::iterator i = peerActiveOut.begin(); i != peerActiveOut.end(); i++)
 	{
-		if (peerActiveOut.find(*i) == peerActiveOut.end()) size++;
+		if (peerActiveIn.find(*i) == peerActiveIn.end())
+			size++;
 	}
-	peerActiveLock.unlock();
+	peerActiveInLock.unlock();
+	peerActiveOutLock.unlock();
     return size;
 }
 //ECM
@@ -175,7 +180,7 @@ void PeerManager::CheckpeerActiveCooldown(map<string, unsigned int>* peerActiveC
 void PeerManager::CheckPeerList()
 {
 	//ECM
-	//Tabela de decisao para remover um peer da lista de vizinhos.
+	//Tabela de decisao para remover peer.
 	//|--------------------------------------------------------------------------------------------------|
 	//| ttlIn ttlOut PeerActiveIn    PeerActiveOut |  Desconectar In | Desconectar Out | Remover  | caso |
 	//|--------------------------------------------------------------------------------------------------|
@@ -229,57 +234,6 @@ void PeerManager::CheckPeerList()
     }
     peerActiveInLock.unlock();
 	peerActiveOUTLock.unlock();
-
-    /*/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    int ttlOut_temp = 0;
-    bool peerPertenceIn = false;
-    bool peerPertenceOut  = false;
-    boost::mutex::scoped_lock peerActiveInLock(peerActiveMutexIn);
-    boost::mutex::scoped_lock peerActiveOUTLock(peerActiveMutexOut);
-    // trata casos: 1, 2, 3, 4
-    for (set<string>::iterator i = peerActiveIn.begin(); i != peerActiveIn.end(); i++)
-    {
-        peerList[*i].DecTTLIn();
-        ttlOut_temp = peerList[*i].GetTTLOut()-1; //o DecTTLOut eh efetivado no segundo loop que trata dos Peers em ActiveOut
-        peerPertenceOut = (peerActiveOut.find(*i) != peerActiveOut.end());
-        if (peerList[*i].GetTTLIn() <= 0) //trata casos: 1, 3, 4
-        {
-        	desconectaPeerIn.insert(*i); // trata caso 1
-            if (!peerPertenceOut) // trata caso: 4
-            {
-            	deletaPeer.insert(*i);
-            }
-            else
-            {
-            	if (ttlOut_temp == 0) // trata caso: 3
-            	{
-            		desconectaPeerOut.insert(*i);
-            		deletaPeer.insert(*i);
-            	}
-            }
-        }
-        else
-        {
-            if ((peerPertenceOut) && (ttlOut_temp == 0)) // trata caso: 2
-            	desconectaPeerOut.insert(*i);
-        }
-    }
-    // trata caso: 5  e efetivar ttlOut-- para todos em ActiveOut
-    for (set<string>::iterator i = peerActiveOut.begin(); i != peerActiveOut.end(); i++)
-    {
-        peerList[*i].DecTTLOut();
-        peerPertenceIn = (peerActiveIn.find(*i) != peerActiveIn.end());
-        if ((peerList[*i].GetTTLOut() <= 0) && (!peerPertenceIn))
-        {
-        	desconectaPeerOut.insert(*i);
-        	deletaPeer.insert(*i);
-        }
-    }
-
-
-    peerActiveInLock.unlock();
-	peerActiveOUTLock.unlock();
-    */////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     for (set<string>::iterator i = desconectaPeerIn.begin(); i != desconectaPeerIn.end(); i++)
     {

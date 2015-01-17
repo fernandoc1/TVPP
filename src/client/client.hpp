@@ -105,6 +105,10 @@ class Client
         
         void HandlePeerlistMessage(MessagePeerlist* message, string sourceAddress = "", uint32_t socket = 0);
         void HandlePingMessage(MessagePing* message, string sourceAddress = "", uint32_t socket = 0);
+        //ECM - posso e devo passar o pingHeader por parâmetro....
+        void HandlePingMessageIn(MessagePing* message, string sourceAddress = "", uint32_t socket = 0);
+        void HandlePingMessageOut(MessagePing* message, string sourceAddress = "", uint32_t socket = 0);
+        //ECM
         void HandleErrorMessage(MessageError* message, string sourceAddress = "", uint32_t socket = 0);
         void HandleRequestMessage(MessageRequest* message, string sourceAddress = "", uint32_t socket = 0);
         void HandleDataMessage(MessageData* message, string sourceAddress = "", uint32_t socket = 0);
