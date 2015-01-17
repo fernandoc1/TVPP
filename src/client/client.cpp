@@ -377,15 +377,16 @@ void Client::HandlePeerlistMessage(MessagePeerlist* message, string sourceAddres
 
 /* PING PACKET:        | OPCODE | HEADERSIZE | BODYSIZE | PINGCODE | X | CHUNKGUID |    BITMAP    | **************************************
 ** Sizes(bytes):       |   1    |     1      |     2    |    1     | 1 |  4  |  2  | BUFFERSIZE/8 | TOTAL: 6 || 12 + (BUFFERSIZE/8) Bytes */
-//ECM - função exclusiva para In
-void Client::HandlePingMessageIn(MessagePing* message, string sourceAddress, uint32_t socket)
+//ECM - função exclusiva para peerActiveIn
+void Client::HandlePingMessageIn(vector<int>* pingHeader, MessagePing* message, string sourceAddress, uint32_t socket)
 {
-    vector<int> pingHeader = message->GetHeaderValues();
-    uint8_t pingType = pingHeader[0];
-    PeerModes otherPeerMode = (PeerModes)pingHeader[1];
-    ChunkUniqueID otherPeerTipChunk = ChunkUniqueID(pingHeader[2],(uint16_t)pingHeader[3]);
+    //vector<int> pingHeader = message->GetHeaderValues();
 
-    //I get to know that peer now if i didnt
+    uint8_t pingType = (*pingHeader)[0];
+    PeerModes otherPeerMode = (PeerModes)(*pingHeader)[1];
+    ChunkUniqueID otherPeerTipChunk = ChunkUniqueID((*pingHeader)[2],(uint16_t)(*pingHeader)[3]);
+
+    //I get to know that peer now if i didn't
     Peer* newPeer = new Peer(sourceAddress);
     if (!peerManager.AddPeer(newPeer))
         delete newPeer;
@@ -400,6 +401,7 @@ void Client::HandlePingMessageIn(MessagePing* message, string sourceAddress, uin
     }
     boost::mutex::scoped_lock peerListLock(*peerManager.GetPeerListMutex());
     peerManager.GetPeerData(sourceAddress)->SetTTLIn(TTL_MAX);
+
     //ECM avaliar a possibilidade de ter um PeerMode In diferente de PeerMode Out...
     peerManager.GetPeerData(sourceAddress)->SetMode(otherPeerMode);
     peerListLock.unlock();
@@ -424,11 +426,10 @@ void Client::HandlePingMessageIn(MessagePing* message, string sourceAddress, uin
 // ECM PING LIVE OUT MESSAGE
 //| OPCODE | HEADERSIZE | BODYSIZE | CHECKSUM |  PINGCODE | PEERMODE | CHUNKGUID |
 //|   1    |     1      |     2    |     2    |     1     |     1    |  4  |  2  | TOTAL: 14
-//ECM - função exclusiva para In
-void Client::HandlePingMessageOut(MessagePing* message, string sourceAddress, uint32_t socket)
+//ECM - função exclusiva para peerActiveOut
+void Client::HandlePingMessageOut(vector<int>* pingHeader, MessagePing* message, string sourceAddress, uint32_t socket)
 {
-    vector<int> pingHeader = message->GetHeaderValues();
-    PeerModes otherPeerMode = (PeerModes)pingHeader[1];
+    PeerModes otherPeerMode = (PeerModes)(*pingHeader)[1];
     
     //I get to know that peer now if i didnt
     Peer* newPeer = new Peer(sourceAddress);
@@ -460,16 +461,14 @@ void Client::HandlePingMessage(MessagePing* message, string sourceAddress, uint3
     switch (pingType)
     {
         case PING_LIVE_OUT:
-        	//ECM TODO passar pingType como parâmetro...
-        	this->HandlePingMessageOut(message, sourceAddress, socket);
+        	this->HandlePingMessageOut(&pingHeader, message, sourceAddress, socket);
             break;
         default:
-        	this->HandlePingMessageIn(message, sourceAddress, socket);
+        	this->HandlePingMessageIn(&pingHeader, message, sourceAddress, socket);
             break;
     }
 
 }
-
 
 /* ERRO PACKET:        | OPCODE | HEADERSIZE | BODYSIZE | ERRORCODE | X | **************************************
 ** Sizes(bytes):       |   1    |     1      |     2    |     1     | 1 | TOTAL: 6 Bytes ***********************/ 
