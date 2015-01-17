@@ -98,7 +98,7 @@ int main (int argc, char* argv[])
             cout <<"  -limitDownload                limits the download bandwidht usage in B/s (default: "<<limitDownload<<" )"<<endl;
             cout <<"  -limitUpload                  limits the upload bandwidht usage in B/s (default: "<<limitUpload<<" )"<<endl;
             cout <<"  -maxPartners                  maximum number of neighbors(default: "<<maxPartners<<" )"<<endl;
-            cout <<"  -mode                         define if the peer is a client (0) or a server (1) (default: "<<mode<<" )"<<endl;
+            cout <<"  -mode                         define if the peer is a client (0), a server (1), a free-rider-good (2) or free-rider-bad (5) (default: "<<mode<<" )"<<endl;
             cout <<"  -peerPort                     port for inter peer comunication (default: "<<peerPort<<" )"<<endl;
             cout <<"  -maxRequestAttempt            maximum number of attempts to perform a request(default: "<<maxRequestAttempt<<" )"<<endl;;
             cout <<"  -tipOffsetTime                amount of seconds from where to start requesting chunks prior to stream tip (default: "<<tipOffsetTime<<" )"<<endl;;
@@ -201,7 +201,13 @@ int main (int argc, char* argv[])
         else if (swtc=="-limitUpload")
         {
             optind++;
-            limitUpload = atoi(argv[optind]);
+            if (mode == 5) //MODE_FREERIDER_BAD
+            	limitUpload = 0;
+            else
+            {
+            	limitUpload = atoi(argv[optind]);
+            }
+
         }
 		else if (swtc=="-disconnectorStrategy")
         {
@@ -267,7 +273,7 @@ int main (int argc, char* argv[])
     {
         boost::thread TGERAR(boost::bind(&Client::GerarDados, &clientInstance));
     }    
-    else //MODE_CLIENT, MODE_FREERIDER, MODE_SUPERNODE
+    else //MODE_CLIENT, MODE_FREERIDER_GOOD, MODE_FREERIDER_BAD, MODE_SUPERNODE
     {
         boost::thread TCONSOME(boost::bind(&Client::ConsomeMedia,&clientInstance));
         boost::thread TPEDIR(boost::bind(&Client::MontarListaPedidos,&clientInstance));

@@ -871,7 +871,7 @@ void Client::Ping()
                         chunkMap[i] = 0xFF;
                 }
           
-                if ((peerMode != MODE_FREERIDER) && (peerMode != MODE_FULLCHUNKMAP))
+                if ((peerMode != MODE_FREERIDER_GOOD) && (peerMode != MODE_FULLCHUNKMAP))
                 {
                     boost::mutex::scoped_lock bufferMapLock(bufferMapMutex);
                     chunkMap = BitsetToBytes(mediaBuffer->GetMap());
