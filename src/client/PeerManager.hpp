@@ -16,7 +16,8 @@
 class PeerManager
 {
 	private:
-		unsigned int maxActivePeers;
+	unsigned int maxActivePeersIn;
+	unsigned int maxActivePeersOut;
 		map<string, PeerData> peerList; //todos conhecidos (vizinhos)
 
 	set<string> peerActiveIn; //ativos que enviam dados a este par
@@ -35,8 +36,9 @@ class PeerManager
 
     public:
 		PeerManager(); //atua na lista de vizinhos
-		unsigned int GetMaxActivePeers();
-		void SetMaxActivePeers(unsigned int maxActivePeers);
+	unsigned int GetMaxActivePeers(set<string>* peerActive);
+		void SetMaxActivePeersIn(unsigned int maxActivePeers);
+		void SetMaxActivePeersOut(unsigned int maxActivePeers);
 
 		bool AddPeer(Peer* newPeer); //add na lista de vizinhos
 

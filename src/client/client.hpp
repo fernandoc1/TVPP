@@ -71,7 +71,7 @@ class Client
         ~Client();
         void ClientInit(char *host_ip, string TCP_server_port, string udp_port, uint32_t idChannel, 
              string peers_udp_port,  string streamingPort, PeerModes mode, uint32_t buffer, 
-            int maxpeers, int janela, int num, int ttl, int maxRequestAttempt, int tipOffsetTime, int limitDownload, int limitUpload, 
+            int maxpeersIn, int maxpeersOut, int janela, int num, int ttlIn, int ttlOut, int maxRequestAttempt, int tipOffsetTime, int limitDownload, int limitUpload,
             string disconnectorStrategy, string connectorStrategy, string chunkSchedulerStrategy, 
             string messageSendScheduler, string messageReceptionScheduler);
         virtual void Ping();
@@ -124,7 +124,8 @@ class Client
         uint32_t BUFFER_SIZE;   //Tamanho do buffer de dados, e chunk_map
         unsigned int JANELA;    //Janela de interesse
         int NUM_PEDIDOS;        //Número de chunks a ser colocado na lista de pedidos a cada chamada
-        int TTL_MAX;            //tempo até o cliente ser removido da lista de peer ativos
+        int TTL_MAX_In;          //tempo até o cliente ser removido da lista de peer ativos na lista In
+        int TTL_MAX_Out;         //tempo até o cliente ser removido da lista de peer ativos na lista Out
         int maxRequestAttempt;  //Maximum number of attempts to perform a request
         int tipOffsetTime;      //Time from where to start requesting once reseting to tip
         uint32_t idChannel;

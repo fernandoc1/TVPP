@@ -6,7 +6,7 @@ Client::Client(){}
 
 void Client::ClientInit(char *host_ip, string TCP_server_port, string udp_port, uint32_t idChannel, 
             string peers_udp_port, string streamingPort, PeerModes mode, uint32_t buffer, 
-            int maxPeers, int janela, int num, int ttl, int maxRequestAttempt, int tipOffsetTime, int limitDownload, int limitUpload, 
+            int maxPeersIn, int maxPeersOut, int janela, int num, int ttlIn, int ttlOut, int maxRequestAttempt, int tipOffsetTime, int limitDownload, int limitUpload,
             string disconnectorStrategy, string connectorStrategy, string chunkSchedulerStrategy, 
             string messageSendScheduler, string messageReceiveScheduler)
 {
@@ -24,10 +24,12 @@ void Client::ClientInit(char *host_ip, string TCP_server_port, string udp_port, 
     this->streamingPort = streamingPort;
     this->peerMode = mode;
     BUFFER_SIZE = buffer;
-    peerManager.SetMaxActivePeers(maxPeers);
+    peerManager.SetMaxActivePeersIn(maxPeersIn);
+    peerManager.SetMaxActivePeersOut(maxPeersOut);
     JANELA = janela;
     NUM_PEDIDOS = num;
-    TTL_MAX = ttl;
+    TTL_MAX_In = ttlIn;
+    TTL_MAX_Out = ttlOut;
     this->maxRequestAttempt = maxRequestAttempt;
     this->tipOffsetTime = tipOffsetTime;
 
@@ -370,6 +372,7 @@ void Client::HandlePeerlistMessage(MessagePeerlist* message, string sourceAddres
                 }
             }
             //ECM
+            cout<<"passando no connector In do cliente"<<endl;
             this->connectorIn->Connect();
         }
     }
@@ -377,11 +380,11 @@ void Client::HandlePeerlistMessage(MessagePeerlist* message, string sourceAddres
 
 /* PING PACKET:        | OPCODE | HEADERSIZE | BODYSIZE | PINGCODE | X | CHUNKGUID |    BITMAP    | **************************************
 ** Sizes(bytes):       |   1    |     1      |     2    |    1     | 1 |  4  |  2  | BUFFERSIZE/8 | TOTAL: 6 || 12 + (BUFFERSIZE/8) Bytes */
-//ECM - função exclusiva para peerActiveIn
+/*ECM - função exclusiva para peerActiveIn
+ * Neste caso, a mensagem foi enviada por quem é meu In para informar o buffermap
+ */
 void Client::HandlePingMessageIn(vector<int>* pingHeader, MessagePing* message, string sourceAddress, uint32_t socket)
 {
-    //vector<int> pingHeader = message->GetHeaderValues();
-
     uint8_t pingType = (*pingHeader)[0];
     PeerModes otherPeerMode = (PeerModes)(*pingHeader)[1];
     ChunkUniqueID otherPeerTipChunk = ChunkUniqueID((*pingHeader)[2],(uint16_t)(*pingHeader)[3]);
@@ -395,12 +398,12 @@ void Client::HandlePingMessageIn(vector<int>* pingHeader, MessagePing* message, 
     {
         if (!peerManager.ConnectPeer(sourceAddress, peerManager.GetPeerActiveIn(), peerManager.GetPeerActiveMutexIn()))
         {
-            cout<<"Ping by "<<sourceAddress<<" tried to connect to me but failed. Neighborhood ["<<peerManager.GetPeerActiveSize(peerManager.GetPeerActiveIn(), peerManager.GetPeerActiveMutexIn())<<"/"<<peerManager.GetMaxActivePeers()<<"]"<<endl;
+            cout<<"Ping by "<<sourceAddress<<" tried to connect to me to be a In but failed. Neighborhood ["<<peerManager.GetPeerActiveSize(peerManager.GetPeerActiveIn(), peerManager.GetPeerActiveMutexIn())<<"/"<<peerManager.GetMaxActivePeers(peerManager.GetPeerActiveIn())<<"]"<<endl;
             return;
         }
     }
     boost::mutex::scoped_lock peerListLock(*peerManager.GetPeerListMutex());
-    peerManager.GetPeerData(sourceAddress)->SetTTLIn(TTL_MAX);
+    peerManager.GetPeerData(sourceAddress)->SetTTLIn(TTL_MAX_In);
 
     //ECM avaliar a possibilidade de ter um PeerMode In diferente de PeerMode Out...
     peerManager.GetPeerData(sourceAddress)->SetMode(otherPeerMode);
@@ -426,7 +429,9 @@ void Client::HandlePingMessageIn(vector<int>* pingHeader, MessagePing* message, 
 // ECM PING LIVE OUT MESSAGE
 //| OPCODE | HEADERSIZE | BODYSIZE | CHECKSUM |  PINGCODE | PEERMODE | CHUNKGUID |
 //|   1    |     1      |     2    |     2    |     1     |     1    |  4  |  2  | TOTAL: 14
-//ECM - função exclusiva para peerActiveOut
+/*ECM - função exclusiva para peerActiveOut
+ * Neste caso, a mensagem foi envida por quem é meu Out para informar que está vivo.
+ */
 void Client::HandlePingMessageOut(vector<int>* pingHeader, MessagePing* message, string sourceAddress, uint32_t socket)
 {
     PeerModes otherPeerMode = (PeerModes)(*pingHeader)[1];
@@ -440,12 +445,12 @@ void Client::HandlePingMessageOut(vector<int>* pingHeader, MessagePing* message,
     {
         if (!peerManager.ConnectPeer(sourceAddress, peerManager.GetPeerActiveOut(), peerManager.GetPeerActiveMutexOut()))
         {
-            cout<<"Ping by "<<sourceAddress<<" tried to connect to me but failed. Neighborhood ["<<peerManager.GetPeerActiveSize(peerManager.GetPeerActiveOut(), peerManager.GetPeerActiveMutexOut())<<"/"<<peerManager.GetMaxActivePeers()<<"]"<<endl;
+            cout<<"Ping by "<<sourceAddress<<" tried to connect to me to be Out but failed. Neighborhood ["<<peerManager.GetPeerActiveSize(peerManager.GetPeerActiveOut(), peerManager.GetPeerActiveMutexOut())<<"/"<<peerManager.GetMaxActivePeers(peerManager.GetPeerActiveOut())<<"]"<<endl;
             return;
         }
     }
     boost::mutex::scoped_lock peerListLock(*peerManager.GetPeerListMutex());
-    peerManager.GetPeerData(sourceAddress)->SetTTLOut(TTL_MAX);
+    peerManager.GetPeerData(sourceAddress)->SetTTLOut(TTL_MAX_Out);
     //ECM avaliar a possibilidade de ter um PeerMode In diferente de PeerMode Out...
     peerManager.GetPeerData(sourceAddress)->SetMode(otherPeerMode);
     peerListLock.unlock();

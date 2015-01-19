@@ -10,6 +10,16 @@ Connector::Connector(Strategy *connectorStrategy, PeerManager* peerManager, uint
 
 void Connector::Connect()
 {
+	// to be removed
+	string a;
+	if (*peerActive == *(peerManager->GetPeerActiveIn()))
+		a = "In";
+	else if (*peerActive == *(peerManager->GetPeerActiveOut()))
+		 a = "Out";
+	else
+		 a = "erro em ponteiro em connector";
+
+	cout<<"***************conectando na lista ativos"<<a<<endl;
 	vector<PeerData*> peers;
 	boost::mutex::scoped_lock peerListLock(*peerManager->GetPeerListMutex());
 	for (map<string, PeerData>::iterator i = peerManager->GetPeerList()->begin(); i != peerManager->GetPeerList()->end(); i++)
@@ -17,9 +27,9 @@ void Connector::Connect()
 		if (!peerManager->IsPeerActive(i->first,peerActive, peerActiveMutex))
 			peers.push_back(&i->second);
 	}
-	strategy->Execute(&peers, NULL, peerManager->GetMaxActivePeers());
+	strategy->Execute(&peers, NULL, peerManager->GetMaxActivePeers(peerActive));
 
-	unsigned int vacancies = peerManager->GetMaxActivePeers() - peerManager->GetPeerActiveSize(peerActive,peerActiveMutex);
+	unsigned int vacancies = peerManager->GetMaxActivePeers(peerActive) - peerManager->GetPeerActiveSize(peerActive,peerActiveMutex);
 	if (vacancies > peers.size()) vacancies = peers.size();
 
 	if (!peers.empty())

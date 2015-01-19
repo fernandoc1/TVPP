@@ -92,7 +92,7 @@ time_t Channel::GetCreationTime()
 {
     return creationTime;
 }
-
+//* texto original ...
 vector<PeerData*> Channel::SelectPeerList(Strategy* strategy, Peer* srcPeer, unsigned int peerQuantity)
 {
     vector<PeerData*> allPeers, selectedPeers;
@@ -110,6 +110,52 @@ vector<PeerData*> Channel::SelectPeerList(Strategy* strategy, Peer* srcPeer, uns
         return selectedPeers;
     }
 }
+
+
+//************************************ codigo eliseu 02 ************************************************** //
+// com este metodo, a topologia tera o servidor atendendo apenas a um cliente x e os demais liagados a x
+/*
+vector<PeerData*> Channel::SelectPeerList(Strategy* strategy, Peer* srcPeer, unsigned int peerQuantity)
+{
+    vector<PeerData*> allPeers, selectedPeers;
+
+    for (map<string, PeerData>::iterator i = peerList.begin(); i != peerList.end(); i++)
+        if (srcPeer->GetID() != i->second.GetPeer()->GetID()){
+            allPeers.push_back(&(i->second));
+             cout <<"allpeers tem um cara com mode "<<(int)i->second.GetMode()<<" e String "<<(string)i->first<<endl;
+        }
+
+    //eliseu
+    cout<<"*******************************************************"<<endl;
+    cout<<"temos no total "<<(unsigned int) peerList.size()<<endl;
+
+    // uso 3 porque peerList tem um elemento a mais que allPeers.
+    // Primeiro o bootstrap insere o novo em peerList. Finalmente, gera allPeers para o novo sem ele
+    // Além disso, peerList ordena pelo campo IP, que é a string do map. Assim, o servidor é sempre o último
+    if (peerList.size() < 3)
+    {
+        cout <<"retornando todos os peers"<<endl;
+        return allPeers;
+    }
+    else
+    {
+
+        //if (peerList.size() <= peerQuantity)
+           peerQuantity = peerList.size()-2;
+        cout <<"entrei no else e teremos "<<peerQuantity<<" parceiros"<<endl;
+        //strategy->Execute(&allPeers, srcPeer, peerQuantity);
+        selectedPeers.insert(selectedPeers.begin(),allPeers.begin(),allPeers.begin()+peerQuantity);
+
+        //codigo eliseu
+
+        for (unsigned int i = 0 ; i < selectedPeers.size(); i++)
+           cout <<"selecionamos alguem de modo "<<(int)selectedPeers[i]->GetMode()<<endl;
+        cout<<"*******************************************************"<<endl;
+
+        return selectedPeers;
+    }
+}
+*/
 
 unsigned int Channel::GetPeerListSize()
 {

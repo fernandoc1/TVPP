@@ -5,15 +5,22 @@ PeerManager::PeerManager()
 {
 }
 
-unsigned int PeerManager::GetMaxActivePeers()
+unsigned int PeerManager::GetMaxActivePeers(set<string>* peerActive)
 {
-	return maxActivePeers;
+	if (peerActive == &peerActiveIn) return maxActivePeersIn;
+	if (peerActive == &peerActiveOut) return maxActivePeersOut;
+	return 0;
 }
 
-void PeerManager::SetMaxActivePeers(unsigned int maxActivePeers)
+void PeerManager::SetMaxActivePeersIn(unsigned int maxActivePeers)
 {
-	this->maxActivePeers = maxActivePeers;
+	this->maxActivePeersIn = maxActivePeers;
 }
+void PeerManager::SetMaxActivePeersOut(unsigned int maxActivePeers)
+{
+	this->maxActivePeersOut = maxActivePeers;
+}
+
 
 bool PeerManager::AddPeer(Peer* newPeer)
 {
@@ -56,12 +63,17 @@ bool PeerManager::ConnectPeer(string peer, set<string>* peerActive, boost::mutex
 	if (peerActiveCooldown->find(peer) == (*peerActiveCooldown).end())
 	{
 		boost::mutex::scoped_lock peerActiveLock(*peerActiveMutex);
-		if (peerActive->size() < maxActivePeers)
+		if (peerActive->size() < this->GetMaxActivePeers(peerActive))
 		{
 			if (peerActive->insert(peer).second)
 			{
 				peerActiveLock.unlock();
-				cout<<"Peer "<<peer<<" connected to PeerActive"<<endl;
+				string list;
+				if (*(peerActive) == peerActiveIn)
+					list = "In";
+				else
+					 list = "out";
+				cout<<"Peer "<<peer<<" connected to PeerActive "<<list<<endl;
 				return true;
 			}
 		}
@@ -280,7 +292,8 @@ int PeerManager::showPeerActive(set<string>* peerActive, boost::mutex* peerActiv
 
 void PeerManager::ShowPeerList()
 {
-    int k = 0;
+/* código original... voltar a este...
+	int k = 0;
     int j = 0;
     cout<<endl<<"- Peer List Active -"<<endl;
     k = showPeerActive(&peerActiveIn, &peerActiveMutexIn);
@@ -299,5 +312,26 @@ void PeerManager::ShowPeerList()
 	}
 	peerListLock.unlock();
 	cout<<"Total: "<<j<<" Peers"<<endl<<endl;
+*/
+//código para teste:
+// to be removed
+	cout<<"Total lista In: "<<this->GetPeerActiveSize(&peerActiveIn, &peerActiveMutexIn);
+	cout<<endl<<"In :";
+    for (set<string>::iterator i = peerActiveIn.begin(); i != peerActiveIn.end(); i++)
+    {
+    	if (i != peerActiveIn.end())
+    			cout<<*i<<" ";
+    }
+    cout<<endl;
+    cout<<"Total lista Out: "<<this->GetPeerActiveSize(&peerActiveOut, &peerActiveMutexOut);
+    cout<<endl<<"Out :";
+    for (set<string>::iterator j = peerActiveOut.begin(); j != peerActiveOut.end(); j++)
+    {
+    	if (j != peerActiveOut.end())
+    			 cout<<*j<<" ";
+
+    }
+    cout<<endl;
+
 }
 
