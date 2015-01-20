@@ -1,3 +1,14 @@
+/*
+ * Modificado: Eliseu César miguel
+ * Data:       2015-01-19
+ * Client deixa de ter um connectorOut. Isso porque os peers ocupam a lista de out quando realizam pedidos.
+ * Enquanto isso, o connector tornou-se connectorIn para diferenciar.
+ * Em relação às mensagens de Ping, um Client envia o buffermap para seus Out e uma mensagem de ping sem o chunkMap para seus In.
+ * Assim, ele informa sua presença na rede.
+ * Como agora um peer pode estar na lista de In e Out concomitantemente, podemos avaliar a possibilidade de este peer ter um "modo"
+ * como In e outro "modo" como Out.
+ */
+
 #include "client.hpp"
 
 using namespace std;
@@ -85,18 +96,18 @@ void Client::ClientInit(char *host_ip, string TCP_server_port, string udp_port, 
     if (peerMode == MODE_SERVER)
     {
         this->connectorIn = NULL;
-        this->connectorOut = NULL;
+        //this->connectorOut = NULL;
         delete requester;
         this->requester = NULL;
     }
     else
     {
         this->connectorIn = new Connector(new RandomStrategy(), &peerManager, updatePeerListPeriod, peerManager.GetPeerActiveIn(),peerManager.GetPeerActiveMutexIn());
-        this->connectorOut = new Connector(new RandomStrategy(), &peerManager, updatePeerListPeriod, peerManager.GetPeerActiveOut(),peerManager.GetPeerActiveMutexOut());
+        //this->connectorOut = new Connector(new RandomStrategy(), &peerManager, updatePeerListPeriod, peerManager.GetPeerActiveOut(),peerManager.GetPeerActiveMutexOut());
     }
     //TODO More connector options
     if (connectorIn) temporizableList.push_back(connectorIn);
-    if (connectorOut) temporizableList.push_back(connectorOut);
+    //if (connectorOut) temporizableList.push_back(connectorOut);
     if (requester) temporizableList.push_back(requester);
 
     receiveRequestPosition = true;
@@ -372,7 +383,6 @@ void Client::HandlePeerlistMessage(MessagePeerlist* message, string sourceAddres
                 }
             }
             //ECM
-            cout<<"passando no connector In do cliente"<<endl;
             this->connectorIn->Connect();
         }
     }
@@ -405,7 +415,6 @@ void Client::HandlePingMessageIn(vector<int>* pingHeader, MessagePing* message, 
     boost::mutex::scoped_lock peerListLock(*peerManager.GetPeerListMutex());
     peerManager.GetPeerData(sourceAddress)->SetTTLIn(TTL_MAX_In);
 
-    //ECM avaliar a possibilidade de ter um PeerMode In diferente de PeerMode Out...
     peerManager.GetPeerData(sourceAddress)->SetMode(otherPeerMode);
     peerListLock.unlock();
 
@@ -430,7 +439,7 @@ void Client::HandlePingMessageIn(vector<int>* pingHeader, MessagePing* message, 
 //| OPCODE | HEADERSIZE | BODYSIZE | CHECKSUM |  PINGCODE | PEERMODE | CHUNKGUID |
 //|   1    |     1      |     2    |     2    |     1     |     1    |  4  |  2  | TOTAL: 14
 /*ECM - função exclusiva para peerActiveOut
- * Neste caso, a mensagem foi envida por quem é meu Out para informar que está vivo.
+ * Neste caso, a mensagem foi envida por quem é meu Out para informar que está vivo ou para entrar na lista de Out.
  */
 void Client::HandlePingMessageOut(vector<int>* pingHeader, MessagePing* message, string sourceAddress, uint32_t socket)
 {
@@ -451,11 +460,9 @@ void Client::HandlePingMessageOut(vector<int>* pingHeader, MessagePing* message,
     }
     boost::mutex::scoped_lock peerListLock(*peerManager.GetPeerListMutex());
     peerManager.GetPeerData(sourceAddress)->SetTTLOut(TTL_MAX_Out);
-    //ECM avaliar a possibilidade de ter um PeerMode In diferente de PeerMode Out...
     peerManager.GetPeerData(sourceAddress)->SetMode(otherPeerMode);
     peerListLock.unlock();
 }
-
 
 //ECM Função que recebe um Ping de outro peer e decide se é Ping de In ou de Out
 void Client::HandlePingMessage(MessagePing* message, string sourceAddress, uint32_t socket)
@@ -862,7 +869,7 @@ void Client::Ping()
             udp->EnqueueSend(bootstrap->GetID(), pingMessage);
 
             /* ping to Active Peer List Out
-             * aqui, será enviada mensagem com buffermap para os peerActiveOut */
+             * ECM. Aqui, será enviada mensagem com buffermap para os peerActiveOut */
             if (peerManager.GetPeerActiveSize(peerManager.GetPeerActiveOut(), peerManager.GetPeerActiveMutexOut()) > 0)
             {
                 pingMessage = new MessagePing(PING_PART_CHUNKMAP, BUFFER_SIZE/8, peerMode, latestReceivedPosition);

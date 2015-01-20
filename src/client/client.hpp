@@ -135,7 +135,7 @@ class Client
 		Disconnector* disconnectorIn;
 		Disconnector* disconnectorOut;
 		Connector* connectorIn;
-		Connector* connectorOut;
+		//Connector* connectorOut;
 
 		PeerRequester* requester;
         Strategy* chunkSchedulerStrategy;
