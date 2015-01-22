@@ -110,7 +110,6 @@ unsigned int PeerManager::GetPeerActiveSize(set<string>* peerActive, boost::mute
 }
 
 // Gera o total de parceiros somando In e Out sem repeticoes
-// obs: Esta função perderá sua utilização quando o cliente informar separado ao bootstrap quantos peers in e Out no log Pref
 unsigned int PeerManager::GetPeerActiveSizeTotal()
 {
 	unsigned int size = this->GetPeerActiveSize(&peerActiveIn, &peerActiveMutexIn);
@@ -284,10 +283,10 @@ void PeerManager::ShowPeerList()
     int j = 0;
     cout<<endl<<"- Peer List Active -"<<endl;
     k = showPeerActive(&peerActiveIn, &peerActiveMutexIn);
-	cout<<"Total: "<<k<<" Peers In"<<endl<<endl;
+	//cout<<"Total: "<<k<<" Peers In"<<endl<<endl;
     j = showPeerActive(&peerActiveOut, &peerActiveMutexOut);
-    cout<<"Total: "<<j<<" Peers Out"<<endl<<endl;
-    cout<<"Total: "<<k+j<<" ActivePeers"<<endl<<endl;
+    cout<<"Total In ["<<k<<"]  Total Out ["<<j<<"]"<<endl;
+    cout<<"Total different Peers Active: ["<<this->GetPeerActiveSizeTotal()<<"] "<<endl<<endl;
 
 	j = 0;
 	cout<<endl<<"- Peer List Total -"<<endl;
@@ -298,7 +297,7 @@ void PeerManager::ShowPeerList()
 		cout<<"ID: "<<i->second.GetPeer()->GetID()<<" Mode: "<<(int)i->second.GetMode()<<" TTLIn: "<<i->second.GetTTLIn() <<" TTLOut: "<<i->second.GetTTLOut() << " RTT(delay): " <<i->second.GetDelay()<< "s PR: "<<i->second.GetPendingRequests() << endl;
 	}
 	peerListLock.unlock();
-	cout<<"Total: "<<j<<" Peers"<<endl<<endl;
+	cout<<"Total PeerList: "<<j<<endl<<endl;
 
     /* ECM código auxiliar de depuração
      * pode ser removido...

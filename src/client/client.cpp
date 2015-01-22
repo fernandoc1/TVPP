@@ -817,7 +817,7 @@ void Client::Ping()
             time(&nowtime);
 
             int chunksExpected = chunksMissed + chunksPlayed;
-
+            //TODO ECM - alterar parâmetros para enviar PeerActiveSizeIn() e PeerActiveSizeOut() ao contrário de PeerActiveSizeTotal()
             pingMessage = new MessagePingBootPerf(peerMode, latestReceivedPosition, Statistics::Instance()->GetEstimatedChunkRate(), idChannel,
                                     chunksGeneratedPerSecond, chunksSentPerSecond, chunksReceivedPerSecond, chunksOverloadPerSecond,
                                     requestsSentPerSecond, requestsRecvPerSecond, requestRetriesPerSecond,

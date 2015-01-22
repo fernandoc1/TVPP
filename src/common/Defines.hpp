@@ -32,7 +32,6 @@ enum PeerModes
     MODE_FREERIDER_GOOD    = 0x02,          // Modo Freerider Good
     MODE_FULLCHUNKMAP      = 0x03,          // Modo Anunciando FULL ChunkMap
     MODE_SUPERNODE         = 0x04,          // Modo Supernode
-    MODE_FREERIDER_BAD     = 0x05,          // Modo Freerider Bad
 };
 
 //Operation Codes

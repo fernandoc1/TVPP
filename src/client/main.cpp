@@ -85,33 +85,33 @@ int main (int argc, char* argv[])
             cout << "\nUsage: ./client [BOOTSTRAP IP] [OPTIONS]" <<endl;
             cout <<"\nMain operation mode:"<<endl;
             cout <<"\n";
-            cout <<"  -bufferSize                   define the buffermap message size (default: "<<bufferSize<<" )"<<endl;
-            cout <<"  -channelId                    select a channel to transmit/receive (default: "<<idChannel<<" )"<<endl;
-			cout <<"  -disconnectorStrategy         select a strategy for peer disconnection (default: "<<disconnectorStrategy<<" )"<<endl;
+            cout <<"  -bufferSize                   define the buffermap message size (default: "<<bufferSize<<")"<<endl;
+            cout <<"  -channelId                    select a channel to transmit/receive (default: "<<idChannel<<")"<<endl;
+			cout <<"  -disconnectorStrategy         select a strategy for peer disconnection (default: "<<disconnectorStrategy<<")"<<endl;
             cout <<"                                (Options: None, Random)"<<endl;
-			cout <<"  -connectorStrategy            select a strategy for peer connection (default: "<<connectorStrategy<<" )"<<endl;
+			cout <<"  -connectorStrategy            select a strategy for peer connection (default: "<<connectorStrategy<<")"<<endl;
             cout <<"                                (Options: Random)"<<endl;
-            cout <<"  -chunkSchedulerStrategy       select a strategy for chunk scheduling (default: "<<chunkSchedulerStrategy<<" )"<<endl;
+            cout <<"  -chunkSchedulerStrategy       select a strategy for chunk scheduling (default: "<<chunkSchedulerStrategy<<")"<<endl;
             cout <<"                                (Options: MinimumFaultStrategy, NullStrategy, RandomStrategy)"<<endl;
-            cout <<"  -messageSendScheduler         select a strategy for message reception (default: "<<messageSendScheduler<<" )"<<endl;
+            cout <<"  -messageSendScheduler         select a strategy for message reception (default: "<<messageSendScheduler<<")"<<endl;
             cout <<"                                (Options: FIFO, RR - RoundRobin, Random, CDF - Closest Deadline First)"<<endl;
-            cout <<"  -messageReceiveScheduler      select a strategy for message reception (default: "<<messageReceiveScheduler<<" )"<<endl;
+            cout <<"  -messageReceiveScheduler      select a strategy for message reception (default: "<<messageReceiveScheduler<<")"<<endl;
             cout <<"                                (Options: FIFO, RR - RoundRobin, Random, CDF - Closest Deadline First)"<<endl;
-            cout <<"  -limitDownload                limits the download bandwidht usage in B/s (default: "<<limitDownload<<" )"<<endl;
-            cout <<"  -limitUpload                  limits the upload bandwidht usage in B/s (default: "<<limitUpload<<" )"<<endl;
-            cout <<"  -maxPartnersIn                maximum number of neighbors-In(default: "<<maxPartnersIn<<" )"<<endl;
-            cout <<"  -maxPartnersOut               maximum number of neighbors-Out(default: "<<maxPartnersOut<<" )"<<endl;
-            cout <<"  -mode                         define the type of client. (default: "<<mode<<" )"<<endl;
-            cout <<"                                (Options: client (0); server (1); free-rider-good (2); or free-rider-bad (5))"<<endl;
-            cout <<"  -peerPort                     port for inter peer comunication (default: "<<peerPort<<" )"<<endl;
-            cout <<"  -maxRequestAttempt            maximum number of attempts to perform a request(default: "<<maxRequestAttempt<<" )"<<endl;;
+            cout <<"  -limitDownload                limits the download bandwidht usage in B/s (default: "<<limitDownload<<")"<<endl;
+            cout <<"  -limitUpload                  limits the upload bandwidht usage in B/s (default: "<<limitUpload<<")"<<endl;
+            cout <<"  -maxPartnersIn                maximum number of neighbors-In(default: "<<maxPartnersIn<<")"<<endl;
+            cout <<"  -maxPartnersOut               maximum number of neighbors-Out(default: "<<maxPartnersOut<<")"<<endl;
+            cout <<"  -mode                         define the type of client. (default: "<<mode<<")"<<endl;
+            cout <<"                                (Options: client (0); server (1); free-rider-good (2) *[free-rider-bad -limitUpload 0])"<<endl;
+            cout <<"  -peerPort                     port for inter peer comunication (default: "<<peerPort<<")"<<endl;
+            cout <<"  -maxRequestAttempt            maximum number of attempts to perform a request(default: "<<maxRequestAttempt<<")"<<endl;;
             cout <<"  -tipOffsetTime                amount of seconds from where to start requesting chunks prior to stream tip (default: "<<tipOffsetTime<<" )"<<endl;;
             //cout <<"  -requestLimit               define the amount of chunks that can be simultaneously asked (default: "<<requestLimit<<" )"<<endl;
-            cout <<"  -streamingPort                port used by media stream (mode-dependent) (default: "<<streamingPort<<" )"<<endl;
-            cout <<"  -tcpPort                      bootstrap tcp port (default: "<<tcpPort<<" )"<<endl;
-            cout <<"  -ttlIn                        partnership time to live list In(default: "<<ttlIn<<" )"<<endl;
-            cout <<"  -ttlOut                       partnership time to live list Out(default: "<<ttlOut<<" )"<<endl;
-            cout <<"  -udpPort                      bootstrap udp port (default: "<<udpPort<<" )"<<endl;
+            cout <<"  -streamingPort                port used by media stream (mode-dependent) (default: "<<streamingPort<<")"<<endl;
+            cout <<"  -tcpPort                      bootstrap tcp port (default: "<<tcpPort<<")"<<endl;
+            cout <<"  -ttlIn                        partnership time to live list In (default: "<<ttlIn<<")"<<endl;
+            cout <<"  -ttlOut                       partnership time to live list Out (default: "<<ttlOut<<")"<<endl;
+            cout <<"  -udpPort                      bootstrap udp port (default: "<<udpPort<<")"<<endl;
             cout <<"\n"<<endl;
             cout <<"  --playerDisabled              disables stream dispatch to player"<<endl;
             cout <<"  --blockFreeriders             blocks requests to freeriders"<<endl;
@@ -195,10 +195,10 @@ int main (int argc, char* argv[])
             ttlIn = atoi(argv[optind]);
         }
         else if (swtc=="-ttlOut")
-                {
-                    optind++;
-                    ttlOut = atoi(argv[optind]);
-                }
+        {
+            optind++;
+            ttlOut = atoi(argv[optind]);
+        }
         else if (swtc=="-maxRequestAttempt")
         {
             optind++;
@@ -217,14 +217,8 @@ int main (int argc, char* argv[])
         else if (swtc=="-limitUpload")
         {
             optind++;
-            if (mode == 5) //MODE_FREERIDER_BAD
-            	limitUpload = 0;
-            else
-            {
-            	limitUpload = atoi(argv[optind]);
-            }
-
-        }
+           	limitUpload = atoi(argv[optind]);
+         }
 		else if (swtc=="-disconnectorStrategy")
         {
             optind++;
@@ -289,7 +283,7 @@ int main (int argc, char* argv[])
     {
         boost::thread TGERAR(boost::bind(&Client::GerarDados, &clientInstance));
     }    
-    else //MODE_CLIENT, MODE_FREERIDER_GOOD, MODE_FREERIDER_BAD, MODE_SUPERNODE
+    else //MODE_CLIENT, MODE_FREERIDER_GOOD, MODE_SUPERNODE
     {
         boost::thread TCONSOME(boost::bind(&Client::ConsomeMedia,&clientInstance));
         boost::thread TPEDIR(boost::bind(&Client::MontarListaPedidos,&clientInstance));
