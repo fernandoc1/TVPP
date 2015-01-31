@@ -21,7 +21,7 @@ class PeerData
         * @param string
         * @param int Max TTL value
         */
-        PeerData(Peer* p = NULL, int ttlIn = TTLIn, int ttlOut = TTLOut, int size = STD_BUFFERSIZE);
+        PeerData(Peer* p = NULL, int ttlIn = TTLIn, int ttlOut = TTLOut, int ttlChannel = TTLChannel, int size = STD_BUFFERSIZE);
         
         Peer* GetPeer();
         
@@ -36,6 +36,10 @@ class PeerData
         int GetTTLOut();
         void SetTTLOut(int v);
         void DecTTLOut();
+
+        int GetTTLChannel();
+        void SetTTLChannel(int v);
+        void DecTTLChannel();
         //ECM
 
         void SetMode(PeerModes mode);
@@ -70,6 +74,7 @@ class PeerData
         //ECM
         int ttlIn;
         int ttlOut;
+        int ttlChannel;
         //ECM
         
         //Peer classification technologies =D

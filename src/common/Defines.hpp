@@ -8,6 +8,7 @@
 //ECM
 #define TTLIn 10
 #define TTLOut 10
+#define TTLChannel 10
 
 #define SECONDS 1000000000
 
