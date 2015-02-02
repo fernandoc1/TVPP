@@ -6,7 +6,6 @@
 #include <string.h>
 #include <stdio.h>
 #include "../common/PeerData.hpp"
-
 #include <boost/thread/mutex.hpp>
 
 #define PEER_ACTIVE_COOLDOWN 5
@@ -53,8 +52,7 @@ class PeerManager
 	/*ECM - nao deve implementar as funções:
 	 * unsigned int GetPeerActiveSizeIn()
 	 * unsigned int GetPeerActiveSizeOut()
-	 * porque, assim o método Connector::connector() deverá ser dois, ao contrário de único.
-	 */
+	 * porque, assim o método Connector::connector() deverá ser dois, ao contrário de único. */
 	unsigned int GetPeerActiveSize(set<string>* peerActive, boost::mutex* peerActiveMutex);
 	unsigned int GetPeerActiveSizeTotal(); //usada para fornecer o total de pares ativos em In + Out sem repetição. Será removida!!!
 
@@ -70,6 +68,5 @@ class PeerManager
 		void CheckPeerList();
         void ShowPeerList();
 };
-
 #endif
 

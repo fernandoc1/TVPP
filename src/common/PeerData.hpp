@@ -21,7 +21,7 @@ class PeerData
         * @param string
         * @param int Max TTL value
         */
-        PeerData(Peer* p = NULL, int ttlIn = TTLIn, int ttlOut = TTLOut, int size = STD_BUFFERSIZE);
+        PeerData(Peer* p = NULL, int ttlIn = TTLIn, int ttlOut = TTLOut, int ttlChannel = TTLChannel, int size = STD_BUFFERSIZE);
         
         Peer* GetPeer();
         
@@ -36,6 +36,13 @@ class PeerData
         int GetTTLOut();
         void SetTTLOut(int v);
         void DecTTLOut();
+
+        int GetTTLChannel();
+        void SetTTLChannel(int v);
+        void DecTTLChannel();
+
+        unsigned int GetChannelId_Sub();
+        void SetChannelId_Sub(unsigned int channelId_Sub);
         //ECM
 
         void SetMode(PeerModes mode);
@@ -67,10 +74,12 @@ class PeerData
         HeadedBitset chunkMap;
         
         //TimeToLive of the partnership or request
-        //ECM
+        //ECM ****
         int ttlIn;
         int ttlOut;
-        //ECM
+        int ttlChannel;
+        unsigned int channelId_Sub;
+        //**** ECM
         
         //Peer classification technologies =D
         int uploadScore;
