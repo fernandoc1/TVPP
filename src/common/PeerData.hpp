@@ -40,12 +40,10 @@ class PeerData
         int GetTTLChannel();
         void SetTTLChannel(int v);
         void DecTTLChannel();
-<<<<<<< HEAD
 
         unsigned int GetChannelId_Sub();
         void SetChannelId_Sub(unsigned int channelId_Sub);
-=======
->>>>>>> 59c4fd997da8bca37e29b8fa4232280d21754666
+
         //ECM
 
         void SetMode(PeerModes mode);
@@ -81,13 +79,11 @@ class PeerData
         int ttlIn;
         int ttlOut;
         int ttlChannel;
-<<<<<<< HEAD
+
         unsigned int channelId_Sub;
         //**** ECM
-=======
         //ECM
->>>>>>> 59c4fd997da8bca37e29b8fa4232280d21754666
-        
+
         //Peer classification technologies =D
         int uploadScore;
         int pendingRequests;
