@@ -13,15 +13,21 @@ PeerData::PeerData(Peer* peer, int ttlIn, int ttlOut, int ttlChannel, int size) 
 	this->ttlIn = ttlIn;
 	this->ttlOut = ttlOut;
 	this->ttlChannel = ttlChannel;
+<<<<<<< HEAD
 	this->channelId_Sub = 0;
+=======
+>>>>>>> 59c4fd997da8bca37e29b8fa4232280d21754666
     this->peer = peer;
     uploadScore = 0;
     mode = MODE_CLIENT;
     pendingRequests = 0;
     delay = 0;
 }
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 59c4fd997da8bca37e29b8fa4232280d21754666
 /** Retorna o TTL*****************/
 int PeerData::GetTTLIn()
 {
@@ -63,6 +69,7 @@ void PeerData::DecTTLChannel()
 {
     ttlChannel--;
 }
+<<<<<<< HEAD
 unsigned int PeerData::GetChannelId_Sub()
 {
 	return channelId_Sub;
@@ -73,6 +80,8 @@ void PeerData::SetChannelId_Sub(unsigned int channelId_Sub)
 	this->channelId_Sub = channelId_Sub;
 }
 
+=======
+>>>>>>> 59c4fd997da8bca37e29b8fa4232280d21754666
 /** Retorna o ID*/
 Peer* PeerData::GetPeer()
 {
