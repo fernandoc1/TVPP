@@ -72,17 +72,24 @@ bool Channel::HasPeer(Peer* peer)
         return false;
 }
 
+/* ECM ****
+ * Insere o peer no canal principal se MODE == NORMAL ou em um sub-canal se MODE == FLASH CROWD
+ * Em MODE FLASH CROWD: caso todos sub-canais estejam cheios, tenta criar novo sub canal e inserir
+ *                      caso não consiga criar novo canal, insere na rede principal.
+ */
+
 void Channel::AddPeer(Peer* peer)
 {
 	if (!this->AddPeerChannel(peer))                    // tenta inserir enquanto sub canais permitire
 	{
-        if(Creat_New_ChannelSub())                      // tenta criar novo sub canal
-        	this->AddPeerChannel(peer);
-        else
+        if(!Creat_New_ChannelSub())
         {
-        	cout<<"Subcanais Esgotados. Inserindo ["<<peer->GetID()<<"] no canal principal"<<endl;
-        	peerList[peer->GetID()] = PeerData(peer);    // insere no canal prinipal
+           	cout<<"Subcanais Esgotados. Inserindo ["<<peer->GetID()<<"] no canal principal"<<endl;
+           	peerList[peer->GetID()] = PeerData(peer);    // insere no canal prinipal
         }
+        else	       	                                 // tenta criar novo sub canal
+        	if (!this->AddPeerChannel(peer))
+        		peerList[peer->GetID()] = PeerData(peer);    // insere no canal prinipal;
 	}
 }
 
@@ -99,10 +106,9 @@ bool Channel::AddPeerChannel(Peer* peer)
 		boost::mutex::scoped_lock channelSubListLock(*channel_Sub_List_Mutex);
 
 		for (map<string, SubChannelData>::iterator i = channel_Sub_List.begin(); i != channel_Sub_List.end(); i++)
-			if (this->GetPeerListSizeChannel_Sub(i->second.GetchannelId_Sub())< this->maxPeer_ChannelSub)
+			if (this->GetPeerListSizeChannel_Sub(i->second.GetchannelId_Sub()) < (this->maxPeer_ChannelSub))
 			{
-				peerList[peer->GetID()] = PeerData(peer);
-				peerList[peer->GetID()].SetChannelId_Sub(i->second.GetchannelId_Sub());
+				peerList[peer->GetID()] = PeerData(peer,i->second.GetchannelId_Sub());
 				channelSubListLock.unlock();
 				return true;
 	        }
@@ -111,6 +117,27 @@ bool Channel::AddPeerChannel(Peer* peer)
 	return false;
 }
 
+/* Atualmente, este método seleciona para servidor auxiliar os primeiros peers que entram no canal
+ * Assim, são escolhidos os peers mais próximos do servidor principal.
+ * Outras estratégias devem ser
+ */
+void Channel::analizePeerToBeServerAux(Peer* source)
+{
+	boost::mutex::scoped_lock channelSubCandidatesLock(*channel_Sub_Candidates_Mutex);
+	if (this->HasPeer(source) && server_Sub_Candidates.size() < MAXPEER_CHANNEL_SUB_CANDIDATE && source->GetID() != this->GetServer()->GetID())
+		server_Sub_Candidates.insert(source->GetID());
+	channelSubCandidatesLock.unlock();
+	printPossibleServerAux();
+}
+
+//método para rastreio... poderá ser apagado
+void Channel::printPossibleServerAux()
+{
+	cout<<"Lista de candidatos a Servidor Auxiliar *******"<<endl;
+	for (set<string>::iterator i = server_Sub_Candidates.begin(); i != server_Sub_Candidates.end(); i++)
+		cout<<"# "<<*i;
+	cout<<"*****"<<endl;
+}
 
 void Channel::RemovePeer(Peer* peer)
 {
@@ -141,26 +168,26 @@ void Channel::SetmaxPeer_ChannelSub(int unsigned maxpeerChannelSub)
 	maxPeer_ChannelSub = maxpeerChannelSub;
 }
 
-
-//***************************************************************************
 bool Channel::Creat_New_ChannelSub()
 {
 	//obtem novo servidor auxiliar
 	string* peerServerAuxNew = NULL;
 	boost::mutex::scoped_lock channelSubCandidatesLock(*channel_Sub_Candidates_Mutex);
 	if (server_Sub_Candidates.size() > 0)
+	{
 		peerServerAuxNew =  new string(*(server_Sub_Candidates.begin()));
-	server_Sub_Candidates.erase(server_Sub_Candidates.begin());
+		server_Sub_Candidates.erase(server_Sub_Candidates.begin());
+	}
 	channelSubCandidatesLock.unlock();
 
 	if (peerServerAuxNew)
 	{
-		unsigned channelID_New = 0;
+		unsigned int channelID_New = 0;
 		boost::mutex::scoped_lock channelSubListLock(*channel_Sub_List_Mutex);
 		for (map<string, SubChannelData>::iterator i = channel_Sub_List.begin(); i != channel_Sub_List.end(); i++)
 			if (channelID_New < this->GetPeerListSizeChannel_Sub(i->second.GetchannelId_Sub()))
 				channelID_New = this->GetPeerListSizeChannel_Sub(i->second.GetchannelId_Sub());
-			channelID_New ++;
+		channelID_New ++;
 		channel_Sub_List[*peerServerAuxNew] = SubChannelData(channelId, channelID_New, peerList[*peerServerAuxNew].GetPeer());
 		channelSubListLock.unlock();
 		return true;
@@ -171,33 +198,27 @@ bool Channel::Creat_New_ChannelSub()
 void Channel::Remove_ChannelSub(string* source)
 {
 	boost::mutex::scoped_lock channelSubListLock(*channel_Sub_List_Mutex);
-
+    channel_Sub_List.erase(*source);
 	channelSubListLock.unlock();
-}
-string* Channel::GetServerSub()
-{
-	string* a;
+
 	boost::mutex::scoped_lock channelSubCandidatesLock(*channel_Sub_Candidates_Mutex);
+	server_Sub_Candidates.insert(*source);
 	channelSubCandidatesLock.unlock();
-	return a;
 }
 
-time_t Channel::GetCreationTime()
-{
-    return creationTime;
-}
 /* ECM ****
  * Agora, fazemos a busca considerando qual subcanal o peer está.
  * Esse procedimento já trata, por si só, o flash crowd. Isso porque,
  * caso não esteja em flash crowd, todos os peers channelId_Sub == 0
+ * OBS: Não tem mutex pois é chamado e travado no bootstrap
  */
 vector<PeerData*> Channel::SelectPeerList(Strategy* strategy, Peer* srcPeer, unsigned int peerQuantity)
 {
     vector<PeerData*> allPeers, selectedPeers;
-    int unsigned channelId_Sub = peerList[srcPeer->GetID()].GetChannelId_Sub();
+    int unsigned channelId_Sub = peerList[srcPeer->GetID()].GetChannelId_Sub();  //descobre o subcanal do par requisitante
     
     for (map<string, PeerData>::iterator i = peerList.begin(); i != peerList.end(); i++)
-        if (srcPeer->GetID() != i->second.GetPeer()->GetID() && channelId_Sub== i->second.GetChannelId_Sub())
+        if (srcPeer->GetID() != i->second.GetPeer()->GetID() && channelId_Sub == i->second.GetChannelId_Sub())
             allPeers.push_back(&(i->second));
     if (this->GetPeerListSizeChannel_Sub(channelId_Sub) <= peerQuantity)
         return allPeers;
@@ -209,11 +230,6 @@ vector<PeerData*> Channel::SelectPeerList(Strategy* strategy, Peer* srcPeer, uns
     }
 }
 
-unsigned int Channel::GetPeerListSize()
-{
-    return peerList.size();
-}
-//ECM
 unsigned int Channel::GetPeerListSizeChannel_Sub(unsigned int channelId_Sub)
 {
 	unsigned int count = 0;
@@ -224,7 +240,16 @@ unsigned int Channel::GetPeerListSizeChannel_Sub(unsigned int channelId_Sub)
 	}
 	return count;
 }
+//***************************************************************************
 
+time_t Channel::GetCreationTime()
+{
+    return creationTime;
+}
+unsigned int Channel::GetPeerListSize()
+{
+    return peerList.size();
+}
 void Channel::CheckActivePeers()
 {
     vector<string> deletedPeer;

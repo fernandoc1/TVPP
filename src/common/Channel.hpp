@@ -15,6 +15,7 @@
 #include "Strategy/Strategy.hpp"
 
 #define MAXPEER_CHANNELSUB 30
+#define MAXPEER_CHANNEL_SUB_CANDIDATE 2 //10
 
 using namespace std;
 
@@ -63,6 +64,7 @@ class Channel
         unsigned int GetPeerListSizeChannel_Sub(unsigned int channelId_Sub);
         void CheckActivePeers();
         void PrintPeerList();
+        void analizePeerToBeServerAux(Peer* source);
 
         FILE* GetPerformanceFile();
         FILE* GetOverlayFile();
@@ -87,8 +89,8 @@ class Channel
         bool AddPeerChannel(Peer* peer);
         bool Creat_New_ChannelSub();
         void Remove_ChannelSub(string* source);
-        string* GetServerSub();
-
+        //apagar esse método
+        void printPossibleServerAux();
 
         //*** ECM
 
