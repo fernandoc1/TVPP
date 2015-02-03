@@ -379,7 +379,7 @@ void Bootstrap::HTTPLog()
                 it++;
             }
             all += tail;
-            pfile = fopen("public_html/bootstraplog/index.html","w");
+            pfile = fopen("~/public_html/bootstraplog/index.html","w");
             if (pfile)
             {
                 fwrite(all.c_str(),1,all.size(),pfile);
